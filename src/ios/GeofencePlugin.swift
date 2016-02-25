@@ -379,7 +379,8 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         notification.soundName = UILocalNotificationDefaultSoundName
         notification.alertBody = geo["notification"]["text"].stringValue
         if let json = geo["notification"]["data"] as JSON? {
-            notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!]
+            //notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!]
+            notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!, "DeepLinkURLKey": json.rawString(NSUTF8StringEncoding, options: [])!]
         }
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
 
