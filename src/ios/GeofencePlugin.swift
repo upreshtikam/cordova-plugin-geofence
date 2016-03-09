@@ -8,7 +8,6 @@
 
 import Foundation
 import AudioToolbox
-import WebKit
 
 let TAG = "GeofencePlugin"
 let iOS8 = floor(NSFoundationVersionNumber) > floor(NSFoundationVersionNumber_iOS_7_1)
@@ -147,11 +146,7 @@ func log(message: String){
 
     func evaluateJs (script: String) {
         if webView != nil {
-            if let uiWebView = webView as? UIWebView {
-                uiWebView.stringByEvaluatingJavaScriptFromString(script)
-            } else if let wkWebView = webView as? WKWebView {
-                wkWebView.evaluateJavaScript(script, completionHandler: nil)
-            }
+            webView!.stringByEvaluatingJavaScriptFromString(script)
         } else {
             log("webView is null")
         }
@@ -268,22 +263,20 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
             log("Warning: Location always permissions not granted, have you initialized geofence plugin?")
         }
 
-        if (iOS8) {
-            if let notificationSettings = UIApplication.sharedApplication().currentUserNotificationSettings() {
-                if !notificationSettings.types.contains(.Sound) {
-                    log("Warning: notification settings - sound permission missing")
-                }
-
-                if !notificationSettings.types.contains(.Alert) {
-                    log("Warning: notification settings - alert permission missing")
-                }
-
-                if !notificationSettings.types.contains(.Badge) {
-                    log("Warning: notification settings - badge permission missing")
-                }
-            } else {
-                log("Warning: notification permission missing")
+        if let notificationSettings = UIApplication.sharedApplication().currentUserNotificationSettings() {
+            if !notificationSettings.types.contains(.Sound) {
+                log("Warning: notification settings - sound permission missing")
             }
+
+            if !notificationSettings.types.contains(.Alert) {
+                log("Warning: notification settings - alert permission missing")
+            }
+
+            if !notificationSettings.types.contains(.Badge) {
+                log("Warning: notification settings - badge permission missing")
+            }
+        } else {
+            log("Warning: notification permission missing")
         }
     }
 
@@ -343,11 +336,13 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     }
 
     func locationManager(manager: CLLocationManager, didStartMonitoringForRegion region: CLRegion) {
-        let lat = (region as! CLCircularRegion).center.latitude
-        let lng = (region as! CLCircularRegion).center.longitude
-        let radius = (region as! CLCircularRegion).radius
+        if region is CLCircularRegion {
+            let lat = (region as! CLCircularRegion).center.latitude
+            let lng = (region as! CLCircularRegion).center.longitude
+            let radius = (region as! CLCircularRegion).radius
 
-        log("Starting monitoring for region \(region) lat \(lat) lng \(lng) of radius \(radius)")
+            log("Starting monitoring for region \(region) lat \(lat) lng \(lng) of radius \(radius)")
+        }
     }
 
     func locationManager(manager: CLLocationManager, didDetermineState state: CLRegionState, forRegion region: CLRegion) {
@@ -371,22 +366,26 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     }
 
     func notifyAbout(geo: JSON) {
-        log("Creating notification")
-        let notification = UILocalNotification()
-        notification.timeZone = NSTimeZone.defaultTimeZone()
-        let dateTime = NSDate()
-        notification.fireDate = dateTime
-        notification.soundName = UILocalNotificationDefaultSoundName
-        notification.alertBody = geo["notification"]["text"].stringValue
-        if let json = geo["notification"]["data"] as JSON? {
-            //notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!]
-            notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!, "DeepLinkURLKey": json.rawString(NSUTF8StringEncoding, options: [])!]
-        }
-        UIApplication.sharedApplication().scheduleLocalNotification(notification)
+        let appState : UIApplicationState = UIApplication.sharedApplication().applicationState;
+        if (appState == UIApplicationState.Background  || appState == UIApplicationState.Inactive)
+        {
+            log("Creating notification")
+            let notification = UILocalNotification()
+            notification.timeZone = NSTimeZone.defaultTimeZone()
+            let dateTime = NSDate()
+            notification.fireDate = dateTime
+            notification.soundName = UILocalNotificationDefaultSoundName
+            notification.alertBody = geo["notification"]["text"].stringValue
+            if let json = geo["notification"]["data"] as JSON? {
+                //notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!]
+                notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!, "DeepLinkURLKey": json.rawString(NSUTF8StringEncoding, options: [])!]
+            }
+            UIApplication.sharedApplication().scheduleLocalNotification(notification)
 
-        if let vibrate = geo["notification"]["vibrate"].array {
-            if (!vibrate.isEmpty && vibrate[0].intValue > 0) {
-                AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
+            if let vibrate = geo["notification"]["vibrate"].array {
+                if (!vibrate.isEmpty && vibrate[0].intValue > 0) {
+                    AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
+                }
             }
         }
     }

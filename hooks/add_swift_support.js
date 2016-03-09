@@ -3,14 +3,14 @@ var child_process = require('child_process'),
     path = require('path');
 
 module.exports = function(context) {
-    var IOS_DEPLOYMENT_TARGET = '8.0',
+    var IOS_DEPLOYMENT_TARGET = '7.0',
         COMMENT_KEY = /_comment$/;
 
     run();
 
     function run() {
         var cordova_util = context.requireCordovaModule('cordova-lib/src/cordova/util'),
-            ConfigParser = context.requireCordovaModule('cordova-common').ConfigParser,
+            ConfigParser = context.requireCordovaModule('cordova-lib/src/configparser/ConfigParser'),
             projectRoot = cordova_util.isCordova(),
             platform_ios,
             xml = cordova_util.projectConfig(projectRoot),
@@ -18,8 +18,6 @@ module.exports = function(context) {
             projectName = cfg.name(),
             iosPlatformPath = path.join(projectRoot, 'platforms', 'ios'),
             iosProjectFilesPath = path.join(iosPlatformPath, projectName),
-            xcconfigPath = path.join(iosPlatformPath, 'cordova', 'build.xcconfig'),
-            xcconfigContent,
             projectFile,
             xcodeProject,
             bridgingHeaderPath;
@@ -38,11 +36,7 @@ module.exports = function(context) {
         // hopefully projectFile can't go null here.......
         xcodeProject = projectFile.xcode;
 
-        if (fs.existsSync(xcconfigPath)) {
-            xcconfigContent = fs.readFileSync(xcconfigPath, 'utf-8');
-        }
-
-        bridgingHeaderPath = getBridgingHeader(projectName, xcconfigContent, xcodeProject);
+        bridgingHeaderPath = getBridgingHeader(xcodeProject);
         if(bridgingHeaderPath) {
             bridgingHeaderPath = path.join(iosPlatformPath, bridgingHeaderPath);
         } else {
@@ -64,33 +58,16 @@ module.exports = function(context) {
             console.log('IOS project option EMBEDDED_CONTENT_CONTAINS_SWIFT set as:[YES] ...');
             console.log('IOS project swift_objc Bridging-Header set to:[' + bridgingHeaderPath + '] ...');
             console.log('IOS project Runpath Search Paths set to: @executable_path/Frameworks ...');
+            console.log('IOS project Adding libsqlite3...');
+            xcodeProject.addFramework("libsqlite3.dylib");
 
             projectFile.write();
         });
     }
 
-    function getBridgingHeader(projectName, xcconfigContent, xcodeProject) {
-        var configurations,
-            config,
-            buildSettings,
-            bridgingHeader;
-
-        if (xcconfigContent) {
-            var regex = /^SWIFT_OBJC_BRIDGING_HEADER *=(.*)$/m,
-                match = xcconfigContent.match(regex);
-
-            if (match) {
-                bridgingHeader = match[1];
-                bridgingHeader = bridgingHeader
-                    .replace("$(PROJECT_DIR)/", "")
-                    .replace("$(PROJECT_NAME)", projectName)
-                    .trim();
-
-                return bridgingHeader;
-            }
-        }
-
-        configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection());
+    function getBridgingHeader(xcodeProject) {
+        var configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection()),
+            config, buildSettings, bridgingHeader;
 
         for (config in configurations) {
             buildSettings = configurations[config].buildSettings;

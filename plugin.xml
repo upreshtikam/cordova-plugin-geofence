@@ -28,6 +28,7 @@
         <source-file src="src/android/AssetUtil.java" target-dir="src/com/cowbell/cordova/geofence" />
         <source-file src="src/android/BeepHelper.java" target-dir="src/com/cowbell/cordova/geofence" />
         <source-file src="src/android/BootReceiver.java" target-dir="src/com/cowbell/cordova/geofence" />
+        <source-file src="src/android/CommandStatus.java" target-dir="src/com/cowbell/cordova/geofence" />
         <source-file src="src/android/GeoNotification.java" target-dir="src/com/cowbell/cordova/geofence" />
         <source-file src="src/android/GeoNotificationManager.java" target-dir="src/com/cowbell/cordova/geofence" />
         <source-file src="src/android/GeoNotificationNotifier.java" target-dir="src/com/cowbell/cordova/geofence" />
@@ -133,6 +134,5 @@
         <source-file src="src/ios/GeofencePlugin.swift"/>
         <source-file src="src/ios/SwiftData.swift"/>
         <source-file src="src/ios/SwiftyJson.swift"/>
-        <framework src="libsqlite3.dylib"/>
     </platform>
 </plugin>
