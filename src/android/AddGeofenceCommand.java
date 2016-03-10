@@ -2,47 +2,81 @@ package com.cowbell.cordova.geofence;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import android.location.LocationManager;
 import android.util.Log;
 
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.Geofence;
+//import com.google.android.gms.location.LocationClient.OnAddGeofencesResultListener;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationStatusCodes;
 
-public class AddGeofenceCommand extends AbstractGoogleServiceCommand {
-    private GeofencingRequest geofenceRequest;
+import java.util.List;
+
+public class AddGeofenceCommand extends AbstractGoogleServiceCommand{
+    private List<Geofence> geofencesToAdd;
     private PendingIntent pendingIntent;
 
     public AddGeofenceCommand(Context context, PendingIntent pendingIntent,
-            GeofencingRequest geofenceRequest) {
+            List<Geofence> geofencesToAdd) {
         super(context);
-        this.geofenceRequest = geofenceRequest;
+        this.geofencesToAdd = geofencesToAdd;
         this.pendingIntent = pendingIntent;
     }
 
     @Override
-    public void Execute() {
-        logger.log(Log.DEBUG, "Adding geofence");
-
-        if (geofenceRequest != null) {
-            LocationServices.GeofencingApi
-                    .addGeofences(googleApiClient, geofenceRequest, pendingIntent)
-                    .setResultCallback(this);
+    public void onAddGeofencesResult(int statusCode, String[] arg1) {
+        // If adding the geofences was successful
+        if (LocationStatusCodes.SUCCESS == statusCode) {
+            logger.log(Log.DEBUG, "Geofences successfully added");
+            /*
+             * Handle successful addition of geofences here. You can send out a
+             * broadcast intent or update the UI. geofences into the Intent's
+             * extended data.
+             */
+        } else {
+            logger.log(Log.DEBUG, "Adding geofences failed");
+            // If adding the geofences failed
+            /*
+             * Report errors here. You can log the error using Log.e() or update
+             * the UI.
+             */
         }
+        CommandExecuted();
     }
 
     @Override
-    public void onResult(Status status) {
-        if (status.isSuccess()) {
-            logger.log(Log.DEBUG, "Geofence successfully added");
-            CommandExecuted(CommandStatus.SUCCESS);
-        } else {
-            StringBuilder message = new StringBuilder();
-            message.append("Adding geofence failed \n");
-            message.append("Status code: " + status.getStatusCode() + "\n");
-            message.append("Message: " + status.getStatusMessage() + "\n");
-            logger.log(Log.ERROR, message.toString());
-            CommandExecuted(new CommandStatus(false, message.toString()));
-        }
+    public void ExecuteCustomCode() {
+        // TODO Auto-generated method stub
+        logger.log(Log.DEBUG, "Adding new geofences");
+        LocationServices.GeofencingApi
+                .addGeofences(mGoogleApiClient, geofencesToAdd, pendingIntent)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        if (status.isSuccess()) {
+                            logger.log(Log.DEBUG, "Geofences successfully added");
+            /*
+             * Handle successful addition of geofences here. You can send out a
+             * broadcast intent or update the UI. geofences into the Intent's
+             * extended data.
+             */
+                        } else {
+                            logger.log(Log.DEBUG, "Adding geofences failed");
+                            // If adding the geofences failed
+            /*
+             * Report errors here. You can log the error using Log.e() or update
+             * the UI.
+             */
+                        }
+                        CommandExecuted();
+                    }
+                });
     }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
 }

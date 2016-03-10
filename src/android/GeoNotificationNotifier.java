@@ -41,7 +41,8 @@ public class GeoNotificationNotifier {
                     .getLaunchIntentForPackage(packageName);
 
             if (notification.data != null) {
-                resultIntent.putExtra("geofence.notification.data", notification.getDataJson());
+                //resultIntent.putExtra("geofence.notification.data", notification.getDataJson());
+                resultIntent.setData(Uri.parse(notification.getDataJson()));
             }
             // The stack builder object will contain an artificial back stack
             // for the
