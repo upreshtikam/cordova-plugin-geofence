@@ -134,5 +134,8 @@
         <source-file src="src/ios/GeofencePlugin.swift"/>
         <source-file src="src/ios/SwiftData.swift"/>
         <source-file src="src/ios/SwiftyJson.swift"/>
+        
+        <header-file src="src/ios/AppDelegate+Geofencing.h"/>
+        <source-file src="src/ios/AppDelegate+Geofencing.m"/>
     </platform>
 </plugin>
