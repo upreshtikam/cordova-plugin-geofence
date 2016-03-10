@@ -1,7 +1,10 @@
 package com.cowbell.cordova.geofence;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -22,6 +25,19 @@ public class GeofencePlugin extends CordovaPlugin {
     protected static Boolean isInBackground = true;
     public static CordovaWebView webView = null;
 
+    private GeoNotificationBroadcastReceiver mReceiver = null;
+
+    private class GeoNotificationBroadcastReceiver extends BroadcastReceiver
+    {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle results = getResultExtras(true);
+            results.putBoolean("HANDLED", true);
+            Log.d(TAG, "GeoNotificationBroadcastReceiver - Received Broadcast intent");
+        }
+    }
+
     /**
      * @param cordova
      *            The context of the main Activity.
@@ -38,40 +54,88 @@ public class GeofencePlugin extends CordovaPlugin {
     }
 
     @Override
-    public boolean execute(final String action, final JSONArray args,
-            final CallbackContext callbackContext) throws JSONException {
+    protected void pluginInitialize() {
+        Log.d(TAG, "GeoNotificationBroadcastReceiver - pluginInitialize");
+        super.pluginInitialize();
+        mReceiver = new GeoNotificationBroadcastReceiver();
+        IntentFilter filter = new IntentFilter(ReceiveTransitionsIntentService.GeofenceTransitionIntent);
+        Context context = this.cordova.getActivity();
+        if(context != null)
+        {
+            context.registerReceiver(mReceiver, filter);
+        }
+    }
+
+    @Override
+    public void onResume(boolean multitasking) {
+        Log.d(TAG, "GeoNotificationBroadcastReceiver - onResume");
+        IntentFilter filter = new IntentFilter(ReceiveTransitionsIntentService.GeofenceTransitionIntent);
+        if(context != null && mReceiver != null) {
+            Context context = this.cordova.getActivity();
+            context.registerReceiver(mReceiver, filter);
+        }
+        super.onResume(multitasking);
+    }
+
+    @Override
+    public void onPause(boolean multitasking) {
+        try {
+            Context context = this.cordova.getActivity();
+            context.unregisterReceiver(mReceiver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        super.onPause(multitasking);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "GeoNotificationBroadcastReceiver - onDestroy");
+        try {
+            Context context = this.cordova.getActivity();
+            context.unregisterReceiver(mReceiver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean execute(String action, JSONArray args,
+            CallbackContext callbackContext) throws JSONException {
         Log.d(TAG, "GeofencePlugin execute action: " + action + " args: "
                 + args.toString());
 
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                if (action.equals("addOrUpdate")) {
-                    if (args.length() > 0) {
-                        GeoNotification geoNotification = parseFromJSONObject(args.optJSONObject(0));
-                        geoNotificationManager.addGeoNotification(geoNotification, callbackContext);
-                    } else {
-                        callbackContext.error("no argument provided");
-                    }
-                } else if (action.equals("remove")) {
-                    List<String> ids = new ArrayList<String>();
-                    for (int i = 0; i < args.length(); i++) {
-                        ids.add(args.optString(i));
-                    }
-                    geoNotificationManager.removeGeoNotifications(ids, callbackContext);
-                } else if (action.equals("removeAll")) {
-                    geoNotificationManager.removeAllGeoNotifications(callbackContext);
-                } else if (action.equals("getWatched")) {
-                    List<GeoNotification> geoNotifications = geoNotificationManager
-                            .getWatched();
-                    callbackContext.success(Gson.get().toJson(geoNotifications));
-                } else if (action.equals("initialize")) {
-                    callbackContext.success();
-                } else if (action.equals("deviceReady")) {
-                    deviceReady();
-                    callbackContext.success();
+        if (action.equals("addOrUpdate")) {
+            List<GeoNotification> geoNotifications = new ArrayList<GeoNotification>();
+            for (int i = 0; i < args.length(); i++) {
+                GeoNotification not = parseFromJSONObject(args.getJSONObject(i));
+                if (not != null) {
+                    geoNotifications.add(not);
                 }
             }
-        });
+            geoNotificationManager.addGeoNotifications(geoNotifications,
+                    callbackContext);
+        } else if (action.equals("remove")) {
+            List<String> ids = new ArrayList<String>();
+            for (int i = 0; i < args.length(); i++) {
+                ids.add(args.getString(i));
+            }
+            geoNotificationManager.removeGeoNotifications(ids, callbackContext);
+        } else if (action.equals("removeAll")) {
+            geoNotificationManager.removeAllGeoNotifications(callbackContext);
+        } else if (action.equals("getWatched")) {
+            List<GeoNotification> geoNotifications = geoNotificationManager
+                    .getWatched();
+            callbackContext.success(Gson.get().toJson(geoNotifications));
+        } else if (action.equals("initialize")) {
+            callbackContext.success();
+        } else if (action.equals("deviceReady")) {
+            deviceReady();
+            callbackContext.success();
+        } else {
+            return false;
+        }
         return true;
     }
 
@@ -95,7 +159,7 @@ public class GeofencePlugin extends CordovaPlugin {
     private void deviceReady() {
         Intent intent = cordova.getActivity().getIntent();
         String data = intent.getStringExtra("geofence.notification.data");
-        String js = "setTimeout('geofence.onNotificationClicked("
+        String js = "setTimeout('geofence.("
                 + data + ")',0)";
 
         if (data == null) {
