@@ -73,7 +73,7 @@ CLLocationManager *knewLocationManager;
              //   notification.alertTitle = @"Nativezer Shell";
             notification.alertBody = @"Enter in a new Geofencing";
             notification.soundName = UILocalNotificationDefaultSoundName;
-            [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+           // [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
         }
     }
 }
@@ -88,7 +88,7 @@ CLLocationManager *knewLocationManager;
           //      notification.alertTitle = @"Nativezer Shell";
             notification.alertBody = @"Exit from a Geofencing!";
             notification.soundName = UILocalNotificationDefaultSoundName;
-            [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+           // [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
         }
     }
 }
