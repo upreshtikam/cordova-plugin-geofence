@@ -8,6 +8,7 @@
 
 #import "AppDelegate+Geofencing.h"
 #import <CoreLocation/CLCircularRegion.h>
+#import "OutSystems-Swift.h"
 
 CLLocationManager *knewLocationManager;
 @implementation AppDelegate (Geofencing)
@@ -54,7 +55,7 @@ CLLocationManager *knewLocationManager;
     knewLocationManager = [CLLocationManager new];
     knewLocationManager.delegate = self;
     [knewLocationManager requestAlwaysAuthorization];
-
+    
     if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)]) {
         [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeSound categories:nil]];
     }
@@ -65,30 +66,61 @@ CLLocationManager *knewLocationManager;
 -(void) locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
     UIApplicationState state = [[UIApplication sharedApplication] applicationState];
-    if (state == UIApplicationStateInactive)
+    if (state == UIApplicationStateInactive ||state == UIApplicationStateBackground)
     {
         if ([region isKindOfClass:[CLCircularRegion class]]){
             UILocalNotification *notification = [[UILocalNotification alloc] init];
-           // if (IsAtLeastiOSVersion(@"8.2"))
-             //   notification.alertTitle = @"Nativezer Shell";
-            notification.alertBody = @"Enter in a new Geofencing";
+            // if (IsAtLeastiOSVersion(@"8.2"))
+            
+            //get data from databse swift
+            WrapperStore *wrapper = [[WrapperStore alloc] init];
+            NSString * geofencing = [wrapper getGeofencingById:region.identifier];
+            //get json to dicionary
+            NSError *jsonError;
+            NSData *objectData = [geofencing dataUsingEncoding:NSUTF8StringEncoding];
+            NSMutableDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:objectData
+                                                                              options:NSJSONReadingMutableContainers
+                                                                                error:&jsonError];
+            //form dicionary from parced data
+            notification.alertBody = [[parsedData valueForKey:@"notification"] valueForKey:@"text"];
             notification.soundName = UILocalNotificationDefaultSoundName;
-           // [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+            //form dicionary to userInfo
+            NSMutableDictionary *userInfoDici = [[NSMutableDictionary alloc]init];
+            [userInfoDici setValue:@"inside" forKey:@"state"];
+            [userInfoDici setObject:parsedData forKey:@"geofence.notification.data"];
+            notification.userInfo = userInfoDici;
+            [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
         }
     }
 }
 
 -(void) locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region {
     UIApplicationState state = [[UIApplication sharedApplication] applicationState];
-    if (state == UIApplicationStateInactive)
+    if (state == UIApplicationStateInactive ||state == UIApplicationStateBackground)
     {
         if ([region isKindOfClass:[CLCircularRegion class]]){
             UILocalNotification *notification = [[UILocalNotification alloc] init];
-          //  if (IsAtLeastiOSVersion(@"8.2"))
-          //      notification.alertTitle = @"Nativezer Shell";
-            notification.alertBody = @"Exit from a Geofencing!";
+            //  if (IsAtLeastiOSVersion(@"8.2"))
+            
+            //get data from databse swift
+            WrapperStore *wrapper = [[WrapperStore alloc] init];
+            NSString * geofencing = [wrapper getGeofencingById:region.identifier];
+            //get json to dicionary
+            NSError *jsonError;
+            NSData *objectData = [geofencing dataUsingEncoding:NSUTF8StringEncoding];
+            NSMutableDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:objectData
+                                                                              options:NSJSONReadingMutableContainers
+                                                                                error:&jsonError];
+            //form dicionary from parced data
+            notification.alertBody = [[parsedData valueForKey:@"notification"] valueForKey:@"text"];
             notification.soundName = UILocalNotificationDefaultSoundName;
-           // [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+            //form dicionary to userInfo
+            NSMutableDictionary *userInfoDici = [[NSMutableDictionary alloc]init];
+            [userInfoDici setValue:@"outside" forKey:@"state"];
+            [userInfoDici setObject:parsedData forKey:@"geofence.notification.data"];
+            notification.userInfo = userInfoDici;
+            
+            [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
         }
     }
 }

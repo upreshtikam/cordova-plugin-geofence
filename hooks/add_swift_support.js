@@ -43,6 +43,8 @@ module.exports = function(context) {
             bridgingHeaderPath = createBridgingHeader(xcodeProject, projectName, iosProjectFilesPath);
         }
 
+        setObjCInterfaceMethod(xcodeProject);
+
         getExistingBridgingHeaders(iosProjectFilesPath, function (headers) {
             importBridgingHeaders(bridgingHeaderPath, headers);
             var configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection()),
@@ -63,6 +65,16 @@ module.exports = function(context) {
 
             projectFile.write();
         });
+    }
+
+    function setObjCInterfaceMethod(xcodeProject) {
+        var configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection()),
+            config, buildSettings;
+            
+        for (config in configurations) {
+            buildSettings = configurations[config].buildSettings;
+            buildSettings['SWIFT_OBJC_INTERFACE_HEADER_NAME'] = '"OutSystems-Swift.h"';
+        }
     }
 
     function getBridgingHeader(xcodeProject) {
