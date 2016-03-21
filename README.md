@@ -4,7 +4,7 @@
 
 ---
 
-We fork this plugin to can extend functionalities. The main goal here was add more features like as:
+Plugin forked from Cowbell Repository to extend functionalities. The main goal here was add more features like as:
 
 * Works with the Application closed;
 * On Notification Clicked the app can be opened by a DeepLink, Deeplink is sent in the Geofence Register on the data parameter;
@@ -296,7 +296,8 @@ If you are retargeting WP 8.0 to WP 8.1 you need to register background task to 
 - Vitor Oliveira, <vitor.oliveira@outsystems.com>
 
 ###Copyright OutSystems, 2015
-Forked from Cowbell-labs.
+
+Original Creator: [Cowbell-labs.]( https://github.com/cowbell)
 
 ---
 
