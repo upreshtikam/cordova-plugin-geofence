@@ -63,6 +63,24 @@ CLLocationManager *knewLocationManager;
     return [self geofencing_application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
+-(void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+    
+    NSLog(@"Did Receive Local Notification Delegate");
+    
+    if(notification != nil) {
+        NSDictionary *userInfo = notification.userInfo;
+        NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"deepLinkGeogence"]];
+        
+        if( siteURL)
+            [[UIApplication sharedApplication] openURL:siteURL];
+    } else {    
+        //NSDictionary *userInfo = notification.userInfo;
+        // NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"DeepLinkURLKey"]];
+        //[[UIApplication sharedApplication] openURL:siteURL];
+        [[NSNotificationCenter defaultCenter] postNotificationName:CDVLocalNotification object:notification];
+    }
+}
+
 -(void) locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
     UIApplicationState state = [[UIApplication sharedApplication] applicationState];
@@ -82,12 +100,17 @@ CLLocationManager *knewLocationManager;
                                                                               options:NSJSONReadingMutableContainers
                                                                                 error:&jsonError];
             //form dicionary from parced data
+            if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_8_1) {
+                notification.alertTitle = [[parsedData valueForKey:@"notification"] valueForKey:@"title"];
+            }
             notification.alertBody = [[parsedData valueForKey:@"notification"] valueForKey:@"text"];
             notification.soundName = UILocalNotificationDefaultSoundName;
             //form dicionary to userInfo
             NSMutableDictionary *userInfoDici = [[NSMutableDictionary alloc]init];
             [userInfoDici setValue:@"inside" forKey:@"state"];
             [userInfoDici setObject:parsedData forKey:@"geofence.notification.data"];
+            if([[parsedData valueForKey:@"notification"] valueForKey:@"data"])
+                [userInfoDici setObject:[[parsedData valueForKey:@"notification"] valueForKey:@"data"] forKey:@"deepLinkGeogence"];
             notification.userInfo = userInfoDici;
             [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
         }
@@ -112,12 +135,17 @@ CLLocationManager *knewLocationManager;
                                                                               options:NSJSONReadingMutableContainers
                                                                                 error:&jsonError];
             //form dicionary from parced data
+            if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_8_1) {
+                notification.alertTitle = [[parsedData valueForKey:@"notification"] valueForKey:@"title"];
+            }
             notification.alertBody = [[parsedData valueForKey:@"notification"] valueForKey:@"text"];
             notification.soundName = UILocalNotificationDefaultSoundName;
             //form dicionary to userInfo
             NSMutableDictionary *userInfoDici = [[NSMutableDictionary alloc]init];
             [userInfoDici setValue:@"outside" forKey:@"state"];
             [userInfoDici setObject:parsedData forKey:@"geofence.notification.data"];
+            if([[parsedData valueForKey:@"notification"] valueForKey:@"data"])
+                [userInfoDici setObject:[[parsedData valueForKey:@"notification"] valueForKey:@"data"] forKey:@"deepLinkGeogence"];
             notification.userInfo = userInfoDici;
             
             [[UIApplication sharedApplication] presentLocalNotificationNow:notification];

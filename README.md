@@ -1,34 +1,29 @@
 # Cordova Geofence Plugin
 
-[![Code Climate](https://codeclimate.com/github/cowbell/cordova-plugin-geofence/badges/gpa.svg)](https://codeclimate.com/github/cowbell/cordova-plugin-geofence)
-[![version](https://badge.fury.io/js/cordova-plugin-geofence.png)](https://badge.fury.io/js/cordova-plugin-geofence)
+###This Plugin is an extension from: [cordova-plugin-geofence](https://github.com/cowbell/cordova-plugin-geofence)
 
-iOS Build [![Build Status](https://travis-ci.org/cowbell/cordova-plugin-geofence.svg?branch=master)](https://travis-ci.org/cowbell/cordova-plugin-geofence)
+---
 
-Android Build [![Build Status](https://circleci.com/gh/cowbell/cordova-plugin-geofence.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/cowbell/cordova-plugin-geofence)
+We fork this plugin to can extend functionalities. The main goal here was add more features like as:
+
+* Works with the Application closed;
+* On Notification Clicked the app can be opened by a DeepLink, Deeplink is sent in the Geofence Register on the data parameter;
+* Upgrade Google Play Service for version 8.4;
+* When the application is opened from notification the notification data can be delivered as a deeplink or in the WebView;
+* Only Create Notifications when the app is in background or closed;
+
+---
 
 Plugin to monitor circular geofences using mobile devices. The purpose is to notify user if crossing the boundary of the monitored geofence.
 
 *Geofences persist after device reboot. You do not have to open your app first to monitor added geofences*
 
-##Example applications
-
-Check out our example applications:
-
-* https://github.com/cowbell/ionic-geofence built with [Ionic](http://ionic.io/) framework
-* https://github.com/cowbell/ember-geofence built with [Ember.js](http://emberjs.com/), [Cordova](https://cordova.apache.org/), [Material Design](https://www.google.com/design/spec/material-design/introduction.html)
 
 ## Installation
 
 From master
 ```
-cordova plugin add https://github.com/cowbell/cordova-plugin-geofence
-```
-
-Latest stable version
-
-```
-cordova plugin add cordova-plugin-geofence
+cordova plugin add https://github.com/OutSystems/phonegap-estimotebeacons.git
 ```
 
 ## Removing the Plugin from project
@@ -219,47 +214,6 @@ window.geofence.onTransitionReceived = function (geofences) {
 };
 ```
 
-## Listening for geofence transitions in native code
-
-### Android
-
-For android plugin broadcasting intent `com.cowbell.cordova.geofence.TRANSITION`. You can implement your own `BroadcastReceiver` and start listening for this intent.
-
-Register receiver in `AndroidManifest.xml`
-
-```xml
-<receiver android:name="YOUR_APP_PACKAGE_NAME.TransitionReceiver">
-    <intent-filter>
-        <action android:name="com.cowbell.cordova.geofence.TRANSITION" />
-    </intent-filter>
-</receiver>
-```
-
-Example `TransitionReceiver.java` code
-
-```java
-......
-import com.cowbell.cordova.geofence.Gson;
-import com.cowbell.cordova.geofence.GeoNotification;
-
-public class TransitionReceiver extends BroadcastReceiver {
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        String error = intent.getStringExtra("error");
-
-        if (error != null) {
-            //handle error
-            Log.println(Log.ERROR, "YourAppTAG", error);
-        } else {
-            String geofencesJson = intent.getStringExtra("transitionData");
-            GeoNotification[] geoNotifications = Gson.get().fromJson(geofencesJson, GeoNotification[].class);
-            //handle geoNotifications objects
-        }
-    }
-}
-```
-
 ## When the app is opened via Notification click
 
 Android, iOS only
@@ -299,10 +253,12 @@ window.geofence.addOrUpdate({
 ##Android
 
 This plugin uses Google Play Services so you need to have it installed on your device.
+This plugin uses GSON to do parse of the JSON, if you use the same library in your project you can have conflicts.
 
 ##iOS
 
 Plugin is written in Swift. All xcode project options to enable swift support are set up automatically after plugin is installed.
+Plugin has a category to AppDelegate that assumes the name "AppDelagate" if you have a diferent name in your project you need replace the name in this category.
 
 ##Windows phone 8.1
 
@@ -324,25 +280,46 @@ If you are retargeting WP 8.0 to WP 8.1 you need to register background task to 
 
 ##Installation
 
-- git clone https://github.com/cowbell/cordova-plugin-geofence
+- git clone https://github.com/OutSystems/cordova-plugin-geofence
 - change into the new directory
 - `npm install`
 
-##Running tests
+---
 
-- Start emulator
-- `cordova-paramedic --platform android --plugin .`
+## Contributors
+- OutSystems - Mobility Experts
+    - João Gonçalves, <joao.goncalves@outsystems.com>
+    - Rúben Gonçalves, <ruben.goncalves@outsystems.com>
+    - Vitor Oliveira, <vitor.oliveira@outsystems.com>
 
-###Testing on iOS
+#### Document author
+- Vitor Oliveira, <vitor.oliveira@outsystems.com>
 
-Before you run `cordova-paramedic` install `npm install -g ios-sim`
+###Copyright OutSystems, 2015
+Forked from Cowbell-labs.
 
-###Troubleshooting
+---
 
-Add `--verbose` at the end of `cordova-paramedic` command.
+LICENSE
+=======
 
-##License
 
-This software is released under the [Apache 2.0 License](http://opensource.org/licenses/Apache-2.0).
+[The MIT License (MIT)](http://www.opensource.org/licenses/mit-license.html)
 
-© 2014-2016 Cowbell-labs. All rights reserved
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
