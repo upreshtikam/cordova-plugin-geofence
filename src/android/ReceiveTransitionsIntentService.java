@@ -114,6 +114,7 @@ public class ReceiveTransitionsIntentService extends IntentService {
                             String fenceId = fence.getRequestId();
                             GeoNotification geoNotification = store
                                     .getGeoNotification(fenceId);
+                            geoNotification.openedFromNotification = false;
                             if (geoNotification != null) {
                                 geoNotification.transitionType = transitionType;
                                 geoNotifications.add(geoNotification);
@@ -130,10 +131,10 @@ public class ReceiveTransitionsIntentService extends IntentService {
                             String fenceId = fence.getRequestId();
                             GeoNotification geoNotification = store
                                     .getGeoNotification(fenceId);
-
+                            geoNotification.openedFromNotification = true;
                             if (geoNotification != null) {
                                 if (geoNotification.notification != null) {
-                                    notifier.notify(geoNotification.notification);
+                                    notifier.notify(geoNotification);
                                 }
                                 geoNotification.transitionType = transitionType;
                                 geoNotifications.add(geoNotification);
