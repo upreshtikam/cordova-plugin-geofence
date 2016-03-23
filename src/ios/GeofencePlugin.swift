@@ -26,7 +26,7 @@ func log(message: String){
         NSNotificationCenter.defaultCenter().addObserver(
             self,
             selector: "didReceiveLocalNotification:",
-            name: "CDVLocalNotification",
+            name: "CDVLocalNotificationGeofence",
             object: nil
         )
         
@@ -132,14 +132,14 @@ func log(message: String){
     func didReceiveLocalNotification (notification: NSNotification) {
         log("didReceiveLocalNotification")
         if UIApplication.sharedApplication().applicationState != UIApplicationState.Active {
-            var data = "undefined"
+            //var data = "undefined"
             if let uiNotification = notification.object as? UILocalNotification {
                 if let notificationData = uiNotification.userInfo?["geofence.notification.data"] as? String {
-                    data = notificationData
+                    let data = notificationData
+                    let js = "setTimeout('geofence.onNotificationClicked(" + data + ")',0)"
+                    
+                    evaluateJs(js)
                 }
-                let js = "setTimeout('geofence.onNotificationClicked(" + data + ")',0)"
-                
-                evaluateJs(js)
             }
         }
     }
@@ -354,14 +354,22 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     }
     
     func handleTransition(region: CLRegion!, transitionType: Int) {
-        if var geoNotification = store.findById(region.identifier) {
-            geoNotification["transitionType"].int = transitionType
+        if region is CLCircularRegion {
+            if var geoNotification = store.findById(region.identifier) {
+                geoNotification["transitionType"].int = transitionType
+                let appState : UIApplicationState = UIApplication.sharedApplication().applicationState;
+                if (appState == UIApplicationState.Background  || appState == UIApplicationState.Inactive)
+                {
+                    geoNotification["openedFromNotification"].bool = true
+                } else {
+                    geoNotification["openedFromNotification"].bool = false
+                }
+                if geoNotification["notification"].isExists() {
+                    notifyAbout(geoNotification)
+                }
             
-            if geoNotification["notification"].isExists() {
-                notifyAbout(geoNotification)
+                NSNotificationCenter.defaultCenter().postNotificationName("handleTransition", object: geoNotification.rawString(NSUTF8StringEncoding, options: []))
             }
-            
-            NSNotificationCenter.defaultCenter().postNotificationName("handleTransition", object: geoNotification.rawString(NSUTF8StringEncoding, options: []))
         }
     }
     
