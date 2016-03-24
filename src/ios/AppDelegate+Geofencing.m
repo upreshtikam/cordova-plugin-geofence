@@ -47,6 +47,21 @@ CLLocationManager *knewLocationManager;
             method_exchangeImplementations(originalMethod, swizzledMethod);
         }
         
+        //
+        SEL originalSelectorNoti = @selector(application:didReceiveLocalNotification:);
+        SEL swizzledSelectorNoti = @selector(geofence_application:didReceiveLocalNotification:);
+        
+        Method originalMethodNoti = class_getInstanceMethod(class, originalSelectorNoti);
+        Method swizzledMethodNoti = class_getInstanceMethod(class, swizzledSelectorNoti);
+        
+        BOOL didAddMethodNoti = class_addMethod(class, originalSelectorNoti, method_getImplementation(swizzledMethodNoti), method_getTypeEncoding(swizzledMethodNoti));
+        
+        if (didAddMethodNoti) {
+            class_replaceMethod(class, swizzledSelectorNoti, method_getImplementation(originalMethodNoti), method_getTypeEncoding(originalMethodNoti));
+        } else {
+            method_exchangeImplementations(originalMethodNoti, swizzledMethodNoti);
+        }
+        
     });
 }
 
@@ -63,23 +78,35 @@ CLLocationManager *knewLocationManager;
     return [self geofencing_application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
--(void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+/*-(void) geofence_application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
+{
+    NSLog(@"Did Receive Local Notification Delegate - Geofence");
     
-    NSLog(@"Did Receive Local Notification Delegate");
-    
-    if(notification != nil) {
+    if(notification != nil && notification.userInfo && [notification.userInfo objectForKey:@"geofence.notification.data"]) {
         NSDictionary *userInfo = notification.userInfo;
         NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"deepLinkGeogence"]];
         
         if( siteURL)
             [[UIApplication sharedApplication] openURL:siteURL];
-    } else {    
-        //NSDictionary *userInfo = notification.userInfo;
-        // NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"DeepLinkURLKey"]];
-        //[[UIApplication sharedApplication] openURL:siteURL];
-        [[NSNotificationCenter defaultCenter] postNotificationName:CDVLocalNotification object:notification];
+        else
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"CDVLocalNotificationGeofence" object:notification];
     }
-}
+}*/
+
+/*-(void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+    
+    NSLog(@"Did Receive Local Notification Delegate - Geofence");
+    
+    if(notification != nil && notification.userInfo && [notification.userInfo objectForKey:@"geofence.notification.data"]) {
+        NSDictionary *userInfo = notification.userInfo;
+        NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"deepLinkGeogence"]];
+        
+        if( siteURL)
+            [[UIApplication sharedApplication] openURL:siteURL];
+        else
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"CDVLocalNotificationGeofence" object:notification];
+    }
+}*/
 
 -(void) locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
@@ -106,6 +133,7 @@ CLLocationManager *knewLocationManager;
             notification.alertBody = [[parsedData valueForKey:@"notification"] valueForKey:@"text"];
             notification.soundName = UILocalNotificationDefaultSoundName;
             //form dicionary to userInfo
+            [parsedData setValue:@"true" forKey:@"openedFromNotification"];
             NSMutableDictionary *userInfoDici = [[NSMutableDictionary alloc]init];
             [userInfoDici setValue:@"inside" forKey:@"state"];
             [userInfoDici setObject:parsedData forKey:@"geofence.notification.data"];
@@ -141,6 +169,7 @@ CLLocationManager *knewLocationManager;
             notification.alertBody = [[parsedData valueForKey:@"notification"] valueForKey:@"text"];
             notification.soundName = UILocalNotificationDefaultSoundName;
             //form dicionary to userInfo
+            [parsedData setValue:@"true" forKey:@"openedFromNotification"];
             NSMutableDictionary *userInfoDici = [[NSMutableDictionary alloc]init];
             [userInfoDici setValue:@"outside" forKey:@"state"];
             [userInfoDici setObject:parsedData forKey:@"geofence.notification.data"];
