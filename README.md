@@ -208,7 +208,7 @@ window.geofence.getWatched().then(function (geofencesJson) {
 
 ```javascript
 window.geofence.onTransitionReceived = function (geofences) {
-    geofences.forEach(function (geo) {
+    geofences.forEach(function (geofences) {
         console.log('Geofence transition detected', geo);
     });
 };
@@ -218,11 +218,7 @@ window.geofence.onTransitionReceived = function (geofences) {
 
 Android, iOS only
 
-```javascript
-window.geofence.onNotificationClicked = function (notificationData) {
-    console.log('App opened from Geo Notification!', notificationData);
-};
-```
+`window.geofence.onTransitionReceived` callback will be called and, for each geofence the property `openedFromNotification` will be true.
 
 #Example usage
 
@@ -295,32 +291,12 @@ If you are retargeting WP 8.0 to WP 8.1 you need to register background task to 
 #### Document author
 - Vitor Oliveira, <vitor.oliveira@outsystems.com>
 
-###Copyright OutSystems, 2015
+###Copyright OutSystems, 2016
 
 Original Creator: [Cowbell-labs.]( https://github.com/cowbell)
 
 ---
 
-LICENSE
-=======
+##License
 
-
-[The MIT License (MIT)](http://www.opensource.org/licenses/mit-license.html)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This software is released under the [Apache 2.0 License](http://opensource.org/licenses/Apache-2.0).
