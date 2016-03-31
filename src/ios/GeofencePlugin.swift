@@ -155,7 +155,7 @@ func log(message: String){
         }
         else{
             if webViewEngine != nil {
-                webViewEngine.evaluateJavaScript(script, completionHandler: nil)
+                webViewEngine!.evaluateJavaScript(script, completionHandler: nil)
             } else {
                 log("webViewEngine is null")
             }
