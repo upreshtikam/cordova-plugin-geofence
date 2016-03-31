@@ -50,9 +50,15 @@ module.exports = function(context) {
             var configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection()),
             config, buildSettings;
 
+            var deploymentTarget = Number(IOS_DEPLOYMENT_TARGET);
+
             for (config in configurations) {
                 buildSettings = configurations[config].buildSettings;
-                buildSettings['IPHONEOS_DEPLOYMENT_TARGET'] = IOS_DEPLOYMENT_TARGET;
+                var currentTarget = Number(buildSettings['IPHONEOS_DEPLOYMENT_TARGET']);
+                if(!isNaN(currentTarget) && !isNaN(deploymentTarget) && (currentTarget < deploymentTarget)){
+                    buildSettings['IPHONEOS_DEPLOYMENT_TARGET'] = IOS_DEPLOYMENT_TARGET;
+                }
+     
                 buildSettings['EMBEDDED_CONTENT_CONTAINS_SWIFT'] = "YES";
                 buildSettings['LD_RUNPATH_SEARCH_PATHS'] = '"@executable_path/Frameworks"'
             }
