@@ -145,10 +145,20 @@ func log(message: String){
     }
     
     func evaluateJs (script: String) {
-        if webView != nil {
-            webView!.stringByEvaluatingJavaScriptFromString(script)
-        } else {
-            log("webView is null")
+        if webView is UIWebView {
+            if let uiWebView = webView as? UIWebView {
+                uiWebView.stringByEvaluatingJavaScriptFromString(script)
+            }
+            else{
+                log("webView is not available")
+            }
+        }
+        else{
+            if webViewEngine != nil {
+                webViewEngine.evaluateJavaScript(script, completionHandler: nil)
+            } else {
+                log("webViewEngine is null")
+            }
         }
     }
 }
@@ -367,7 +377,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
                 if geoNotification["notification"].isExists() {
                     notifyAbout(geoNotification)
                 }
-            
+                
                 NSNotificationCenter.defaultCenter().postNotificationName("handleTransition", object: geoNotification.rawString(NSUTF8StringEncoding, options: []))
             }
         }
@@ -375,28 +385,28 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     
     func notifyAbout(geo: JSON) {
         /*let appState : UIApplicationState = UIApplication.sharedApplication().applicationState;
-        if (appState == UIApplicationState.Background  || appState == UIApplicationState.Inactive)
-        {
-            log("Creating notification")
-            let notification = UILocalNotification()
-            notification.timeZone = NSTimeZone.defaultTimeZone()
-            let dateTime = NSDate()
-            notification.fireDate = dateTime
-            notification.soundName = UILocalNotificationDefaultSoundName
-            //notification.alertTitle = geo["notification"]["title"].stringValue
-            notification.alertBody = geo["notification"]["text"].stringValue
-            if let json = geo["notification"]["data"] as JSON? {
-                //notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!]
-                notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!, "DeepLinkURLKey": json.rawString(NSUTF8StringEncoding, options: [])!]
-            }
-            UIApplication.sharedApplication().scheduleLocalNotification(notification)
-            
-            if let vibrate = geo["notification"]["vibrate"].array {
-                if (!vibrate.isEmpty && vibrate[0].intValue > 0) {
-                    AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
-                }
-            }
-        } */
+         if (appState == UIApplicationState.Background  || appState == UIApplicationState.Inactive)
+         {
+         log("Creating notification")
+         let notification = UILocalNotification()
+         notification.timeZone = NSTimeZone.defaultTimeZone()
+         let dateTime = NSDate()
+         notification.fireDate = dateTime
+         notification.soundName = UILocalNotificationDefaultSoundName
+         //notification.alertTitle = geo["notification"]["title"].stringValue
+         notification.alertBody = geo["notification"]["text"].stringValue
+         if let json = geo["notification"]["data"] as JSON? {
+         //notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!]
+         notification.userInfo = ["geofence.notification.data": json.rawString(NSUTF8StringEncoding, options: [])!, "DeepLinkURLKey": json.rawString(NSUTF8StringEncoding, options: [])!]
+         }
+         UIApplication.sharedApplication().scheduleLocalNotification(notification)
+         
+         if let vibrate = geo["notification"]["vibrate"].array {
+         if (!vibrate.isEmpty && vibrate[0].intValue > 0) {
+         AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
+         }
+         }
+         } */
     }
 }
 
@@ -448,7 +458,7 @@ class GeoNotificationStore{
     func add(geoNotification: JSON) {
         let id = geoNotification["id"].stringValue
         let err = SD.executeChange("INSERT INTO GeoNotifications (Id, Data) VALUES(?, ?)",
-            withArgs: [id, geoNotification.description])
+                                   withArgs: [id, geoNotification.description])
         
         if err != nil {
             log("Error while adding \(id) GeoNotification: \(err)")
@@ -458,7 +468,7 @@ class GeoNotificationStore{
     func update(geoNotification: JSON) {
         let id = geoNotification["id"].stringValue
         let err = SD.executeChange("UPDATE GeoNotifications SET Data = ? WHERE Id = ?",
-            withArgs: [geoNotification.description, id])
+                                   withArgs: [geoNotification.description, id])
         
         if err != nil {
             log("Error while adding \(id) GeoNotification: \(err)")
