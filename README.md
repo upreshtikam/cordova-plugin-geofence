@@ -23,7 +23,7 @@ Plugin to monitor circular geofences using mobile devices. The purpose is to not
 
 From master
 ```
-cordova plugin add https://github.com/OutSystems/phonegap-estimotebeacons.git
+cordova plugin add https://github.com/OutSystems/cordova-plugin-geofence.git
 ```
 
 ## Removing the Plugin from project
