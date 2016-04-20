@@ -18,6 +18,10 @@ public class Notification {
     @Expose public String smallIcon = "";
     @Expose public Object data;
     @Expose public boolean openAppOnClick;
+    @Expose public String dateStart;
+    @Expose public String dateEnd;
+    @Expose public boolean happensOnce;
+    @Expose public boolean notificationShowed = false;
 
     public void setContext(Context context) {
         this.context = context;

@@ -12,7 +12,11 @@ import android.util.Log;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ReceiveTransitionsIntentService extends IntentService {
@@ -110,29 +114,35 @@ public class ReceiveTransitionsIntentService extends IntentService {
                         // The application is up and running so we want to notify directly into the
                         // webview
 
+                        boolean showNotification = false;
                         for (Geofence fence : triggerList) {
                             String fenceId = fence.getRequestId();
                             GeoNotification geoNotification = store
                                     .getGeoNotification(fenceId);
                             geoNotification.openedFromNotification = false;
+
+                            showNotification = validateTimeInterval(geoNotification);
+
                             if (geoNotification != null) {
                                 geoNotification.transitionType = transitionType;
                                 geoNotifications.add(geoNotification);
                             }
                         }
 
-                        if (geoNotifications.size() > 0) {
+                        if (geoNotifications.size() > 0 && showNotification) {
                             broadcastIntent.putExtra("transitionData", Gson.get().toJson(geoNotifications));
                             GeofencePlugin.onTransitionReceived(geoNotifications);
                         }
 
                     } else {
+                        boolean showNotification = false;
                         for (Geofence fence : triggerList) {
                             String fenceId = fence.getRequestId();
                             GeoNotification geoNotification = store
                                     .getGeoNotification(fenceId);
                             geoNotification.openedFromNotification = true;
-                            if (geoNotification != null) {
+
+                            if (geoNotification != null && validateTimeInterval(geoNotification)) {
                                 if (geoNotification.notification != null) {
                                     notifier.notify(geoNotification);
                                 }
@@ -156,4 +166,77 @@ public class ReceiveTransitionsIntentService extends IntentService {
         }
     }
 
+    /**
+     * Method to check if there are configurations to show the Notification. If so, validate if the date is inside of range
+     * @param geoNotification
+     * @return
+     */
+    private boolean validateTimeInterval(GeoNotification geoNotification){
+        final Logger logger = Logger.getLogger();
+        boolean showNotification = false;
+        //Validate if the Geofence has an interval of time to show notification
+        String timestampStart = geoNotification.notification.dateStart;
+        String timestampEnd = geoNotification.notification.dateEnd;
+        boolean happensOnce = geoNotification.notification.happensOnce;
+        boolean notificationShowed = geoNotification.notification.notificationShowed;
+
+        if((timestampStart == null || timestampStart == "") && (timestampEnd == null || timestampEnd == "")) {
+            showNotification = true;
+        } else {
+            Date dateNow = new Date();
+            DateFormat formatter ;
+            Date dateStart = null;
+            Date dateEnd = null;
+            //formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            try {
+                dateStart = formatter.parse(timestampStart);
+            } catch (ParseException e) {
+                logger.log(Log.ERROR, e.toString());
+            }
+
+            try {
+                dateEnd = formatter.parse(timestampEnd);
+            } catch (ParseException e) {
+                logger.log(Log.ERROR, e.toString());
+            }
+
+            if (timestampStart != null && dateStart != null) {
+                if(dateNow.after(dateStart))
+                    showNotification = true;
+                else
+                    showNotification = false;
+            }
+            if (timestampEnd != null && dateEnd != null) {
+
+                if((dateStart == null || dateEnd.after(dateStart))) {
+                    if (dateNow.before(dateEnd))
+                        showNotification = true;
+                    else
+                        showNotification = false;
+                }
+            }
+
+            if(notificationShowed && happensOnce){
+                showNotification = false;
+            }
+
+            if(!notificationShowed && happensOnce) {
+                geoNotification.notification.notificationShowed = true;
+                store.setGeoNotification(geoNotification);
+
+                List<String> ids = new ArrayList<String>();
+                ids.add(geoNotification.id);
+                RemoveGeofenceCommand cmd = new RemoveGeofenceCommand(getApplicationContext(), ids);
+                cmd.addListener(new IGoogleServiceCommandListener() {
+                    @Override
+                    public void onCommandExecuted() {
+                        logger.log(Log.DEBUG, "Geofence Removed");
+                    }
+                });
+            }
+        }
+        //End of changes
+        return showNotification;
+    }
 }

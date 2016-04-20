@@ -374,15 +374,23 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
                 } else {
                     geoNotification["openedFromNotification"].bool = false
                 }
-                if geoNotification["notification"].isExists() {
-                    notifyAbout(geoNotification)
-                }
                 
+                if (appState == UIApplicationState.Active)
+                {
+                    let geoNotificationStr = geoNotification.rawString(NSUTF8StringEncoding, options: [])
+                
+                    let dispatchEvent = GeofenceHelper.validateTimeIntervalWithString(geoNotificationStr)
+                    if geoNotification["notification"].isExists() {
+                        if(dispatchEvent) {
+                            notifyAbout(geoNotification)
+                        }
+                    }
+                }
                 NSNotificationCenter.defaultCenter().postNotificationName("handleTransition", object: geoNotification.rawString(NSUTF8StringEncoding, options: []))
             }
         }
     }
-    
+
     func notifyAbout(geo: JSON) {
         /*let appState : UIApplicationState = UIApplication.sharedApplication().applicationState;
          if (appState == UIApplicationState.Background  || appState == UIApplicationState.Inactive)
@@ -417,6 +425,14 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     @objc func getGeofencingById(id: String) -> String {
         store.createDBStructure();
         return store.findByIdStr(id)!
+    }
+    
+    @objc func updateDB(geoNotification: String) {
+        store.createDBStructure();
+        
+        let jsonGeoNotification = JSON(data: geoNotification.dataUsingEncoding(NSUTF8StringEncoding)!)
+        
+        store.update(jsonGeoNotification)
     }
 }
 

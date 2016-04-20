@@ -140,5 +140,7 @@
         
         <header-file src="src/ios/AppDelegate+Geofencing.h"/>
         <source-file src="src/ios/AppDelegate+Geofencing.m"/>
+        <header-file src="src/ios/GeofenceHelper.h"/>
+        <source-file src="src/ios/GeofenceHelper.m"/>
     </platform>
 </plugin>
