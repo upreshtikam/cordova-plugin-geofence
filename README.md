@@ -93,7 +93,10 @@ window.geofence.addOrUpdate({
         icon:           String, //icon showed in notification drawer
         openAppOnClick: Boolean,//is main app activity should be opened after clicking on notification
         vibration:      [Integer], //Optional vibration pattern - see description
-        data:           Object  //Custom object associated with notification
+        data:           Object,  //Custom object associated with notification
+        dateStart:      Date, // Initial Date to start dispatch events of a Geofence - Optiona parameter
+        dateEnd:        Date, // End Date to stop dispatch events of a Geofence - Optiona parameter
+        happensOnce:    Boolean,  // only show a notification once - Default value false
     }
 }).then(function () {
     console.log('Geofence successfully added');
