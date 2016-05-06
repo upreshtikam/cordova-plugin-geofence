@@ -39,25 +39,13 @@
         NSDate *_timeDateStart = [formatter dateFromString:timeDateStart];
         NSDate *_timeDateEnd = [formatter dateFromString:timeDateEnd];
         
-        if (timeDateStart && _timeDateStart) {
-            NSComparisonResult result = [dateNow compare:_timeDateStart];
-            
-            if(result == NSOrderedDescending || result == NSOrderedSame)
-                showNotification = YES;
-            else
-                showNotification = NO;
-        }
-        if (timeDateEnd && _timeDateEnd) {
-            NSComparisonResult result = [dateNow compare:_timeDateEnd];
-            if(!_timeDateStart || [_timeDateStart compare:_timeDateEnd] == NSOrderedAscending){
-                if(result == NSOrderedAscending || result == NSOrderedSame)
-                    showNotification = YES;
-                else
-                    showNotification = NO;
-            }
+        if([_timeDateEnd compare:_timeDateStart] == NSOrderedSame || [_timeDateEnd compare:_timeDateStart] == NSOrderedAscending) {
+            _timeDateEnd = [NSDate date];
         }
         
-        if(!notificationShowed && happensOnce) {
+        showNotification = [self date:dateNow isBetweenDate:_timeDateStart andDate:_timeDateEnd];
+        
+        if(showNotification && !notificationShowed && happensOnce) {
             [[parsedData valueForKey:@"notification"] setValue:[NSNumber numberWithBool:YES] forKey:@"notificationShowed"];
             
             // Update Geofence

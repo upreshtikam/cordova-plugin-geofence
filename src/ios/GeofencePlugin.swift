@@ -378,15 +378,18 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
                 if (appState == UIApplicationState.Active)
                 {
                     let geoNotificationStr = geoNotification.rawString(NSUTF8StringEncoding, options: [])
-                
                     let dispatchEvent = GeofenceHelper.validateTimeIntervalWithString(geoNotificationStr)
+
                     if geoNotification["notification"].isExists() {
                         if(dispatchEvent) {
                             notifyAbout(geoNotification)
                         }
                     }
+                    
+                    if(dispatchEvent) {
+                        NSNotificationCenter.defaultCenter().postNotificationName("handleTransition", object: geoNotification.rawString(NSUTF8StringEncoding, options: []))
+                    }
                 }
-                NSNotificationCenter.defaultCenter().postNotificationName("handleTransition", object: geoNotification.rawString(NSUTF8StringEncoding, options: []))
             }
         }
     }
