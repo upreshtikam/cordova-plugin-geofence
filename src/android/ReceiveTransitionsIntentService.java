@@ -111,19 +111,19 @@ public class ReceiveTransitionsIntentService extends IntentService {
                     List<GeoNotification> geoNotifications = new ArrayList<GeoNotification>();
 
                     if (handled) {
+                        boolean showNotification = false;
                         // The application is up and running so we want to notify directly into the
                         // webview
 
-                        boolean showNotification = false;
                         for (Geofence fence : triggerList) {
                             String fenceId = fence.getRequestId();
                             GeoNotification geoNotification = store
                                     .getGeoNotification(fenceId);
-                            geoNotification.openedFromNotification = false;
 
                             showNotification = validateTimeInterval(geoNotification);
 
                             if (geoNotification != null) {
+                                geoNotification.openedFromNotification = false;
                                 geoNotification.transitionType = transitionType;
                                 geoNotifications.add(geoNotification);
                             }
@@ -139,14 +139,15 @@ public class ReceiveTransitionsIntentService extends IntentService {
                             String fenceId = fence.getRequestId();
                             GeoNotification geoNotification = store
                                     .getGeoNotification(fenceId);
-                            geoNotification.openedFromNotification = true;
 
                             if (geoNotification != null && validateTimeInterval(geoNotification)) {
+                                geoNotification.openedFromNotification = true;
+                                geoNotification.transitionType = transitionType;
+                                geoNotifications.add(geoNotification);
+
                                 if (geoNotification.notification != null) {
                                     notifier.notify(geoNotification);
                                 }
-                                geoNotification.transitionType = transitionType;
-                                geoNotifications.add(geoNotification);
                             }
                         }
                     }
@@ -179,6 +180,11 @@ public class ReceiveTransitionsIntentService extends IntentService {
         boolean happensOnce = geoNotification.notification.happensOnce;
         boolean notificationShowed = geoNotification.notification.notificationShowed;
 
+        if(notificationShowed && happensOnce){
+            showNotification = false;
+            return showNotification;
+        }
+
         if((timestampStart == null || timestampStart == "") && (timestampEnd == null || timestampEnd == "")) {
             showNotification = true;
         } else {
@@ -206,10 +212,6 @@ public class ReceiveTransitionsIntentService extends IntentService {
 
             showNotification = dateIsBetweenIntervalDate(dateNow, dateStart, dateEnd);
 
-            if(notificationShowed && happensOnce){
-                showNotification = false;
-            }
-
             if(showNotification && !notificationShowed && happensOnce) {
                 geoNotification.notification.notificationShowed = true;
                 store.setGeoNotification(geoNotification);
@@ -219,10 +221,12 @@ public class ReceiveTransitionsIntentService extends IntentService {
                 RemoveGeofenceCommand cmd = new RemoveGeofenceCommand(getApplicationContext(), ids);
                 cmd.addListener(new IGoogleServiceCommandListener() {
                     @Override
-                    public void onCommandExecuted() {
+                    public void onCommandExecuted(boolean withSuccess) {
                         logger.log(Log.DEBUG, "Geofence Removed");
                     }
                 });
+                GoogleServiceCommandExecutor googleServiceCommandExecutor = new GoogleServiceCommandExecutor();
+                googleServiceCommandExecutor.QueueToExecute(cmd);
             }
         }
         //End of changes
@@ -232,4 +236,5 @@ public class ReceiveTransitionsIntentService extends IntentService {
     private boolean dateIsBetweenIntervalDate(Date date, Date startDate, Date endDate) {
         return date.after(startDate) && date.before(endDate);
     }
+
 }
