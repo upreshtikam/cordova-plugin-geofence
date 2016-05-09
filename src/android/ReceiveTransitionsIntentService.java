@@ -135,7 +135,6 @@ public class ReceiveTransitionsIntentService extends IntentService {
                         }
 
                     } else {
-                        boolean showNotification = false;
                         for (Geofence fence : triggerList) {
                             String fenceId = fence.getRequestId();
                             GeoNotification geoNotification = store
@@ -201,27 +200,17 @@ public class ReceiveTransitionsIntentService extends IntentService {
                 logger.log(Log.ERROR, e.toString());
             }
 
-            if (timestampStart != null && dateStart != null) {
-                if(dateNow.after(dateStart))
-                    showNotification = true;
-                else
-                    showNotification = false;
+            if (dateStart.equals(dateEnd) || dateStart.after(dateEnd)) {
+                dateEnd = new Date();
             }
-            if (timestampEnd != null && dateEnd != null) {
 
-                if((dateStart == null || dateEnd.after(dateStart))) {
-                    if (dateNow.before(dateEnd))
-                        showNotification = true;
-                    else
-                        showNotification = false;
-                }
-            }
+            showNotification = dateIsBetweenIntervalDate(dateNow, dateStart, dateEnd);
 
             if(notificationShowed && happensOnce){
                 showNotification = false;
             }
 
-            if(!notificationShowed && happensOnce) {
+            if(showNotification && !notificationShowed && happensOnce) {
                 geoNotification.notification.notificationShowed = true;
                 store.setGeoNotification(geoNotification);
 
@@ -230,7 +219,7 @@ public class ReceiveTransitionsIntentService extends IntentService {
                 RemoveGeofenceCommand cmd = new RemoveGeofenceCommand(getApplicationContext(), ids);
                 cmd.addListener(new IGoogleServiceCommandListener() {
                     @Override
-                    public void onCommandExecuted(boolean withSuccess) {
+                    public void onCommandExecuted() {
                         logger.log(Log.DEBUG, "Geofence Removed");
                     }
                 });
@@ -238,5 +227,9 @@ public class ReceiveTransitionsIntentService extends IntentService {
         }
         //End of changes
         return showNotification;
+    }
+
+    private boolean dateIsBetweenIntervalDate(Date date, Date startDate, Date endDate) {
+        return date.after(startDate) && date.before(endDate);
     }
 }
