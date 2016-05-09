@@ -123,7 +123,7 @@ func log(message: String){
         log("didReceiveTransition")
         if let geoNotificationString = notification.object as? String {
             
-            let js = "setTimeout('geofence.onTransitionReceived([" + geoNotificationString + "])',0)"
+            let js = "setTimeout(geofence.onTransitionReceived([" + geoNotificationString + "]),0)"
             
             evaluateJs(js)
         }
@@ -136,7 +136,7 @@ func log(message: String){
             if let uiNotification = notification.object as? UILocalNotification {
                 if let notificationData = uiNotification.userInfo?["geofence.notification.data"] as? String {
                     let data = notificationData
-                    let js = "setTimeout('geofence.onTransitionReceived(" + data + ")',0)"
+                    let js = "setTimeout(geofence.onTransitionReceived(" + data + "),0)"
                     
                     evaluateJs(js)
                 }
