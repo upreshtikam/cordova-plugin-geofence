@@ -61,6 +61,17 @@
     return showNotification;
 }
 
++ (BOOL)date:(NSDate*)date isBetweenDate:(NSDate*)beginDate andDate:(NSDate*)endDate
+{
+    if ([date compare:beginDate] == NSOrderedAscending)
+        return NO;
+    
+    if ([date compare:endDate] == NSOrderedDescending)
+        return NO;
+    
+    return YES;
+}
+
 +(BOOL) validateTimeIntervalWithString: (NSString*) geofenceStr {
     NSError *jsonError;
     NSData *objectData = [geofenceStr dataUsingEncoding:NSUTF8StringEncoding];
