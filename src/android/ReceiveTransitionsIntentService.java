@@ -230,7 +230,7 @@ public class ReceiveTransitionsIntentService extends IntentService {
                 RemoveGeofenceCommand cmd = new RemoveGeofenceCommand(getApplicationContext(), ids);
                 cmd.addListener(new IGoogleServiceCommandListener() {
                     @Override
-                    public void onCommandExecuted() {
+                    public void onCommandExecuted(boolean withSuccess) {
                         logger.log(Log.DEBUG, "Geofence Removed");
                     }
                 });

@@ -158,7 +158,14 @@ public class GeofencePlugin extends CordovaPlugin {
 
     private void deviceReady() {
         Intent intent = cordova.getActivity().getIntent();
-        Intent launcherIntent = intent.getParcelableExtra("LAUNCHER_INTENT");
+        Intent launcherIntent = null;
+        if(intent != null && intent.hasExtra("LAUNCHER_INTENT")){
+            launcherIntent = intent.getParcelableExtra("LAUNCHER_INTENT");
+
+        } else {
+            launcherIntent = intent;
+        }
+
         if(launcherIntent != null){
 
             String data = launcherIntent.getStringExtra("geofence.notification.data");

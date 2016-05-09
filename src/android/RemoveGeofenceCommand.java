@@ -32,7 +32,7 @@ public class RemoveGeofenceCommand extends AbstractGoogleServiceCommand{
     public void onRemoveGeofencesByPendingIntentResult(int arg0,
             PendingIntent arg1) {
         logger.log(Log.DEBUG, "All Geofences removed");
-        CommandExecuted();
+        CommandExecuted(true);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class RemoveGeofenceCommand extends AbstractGoogleServiceCommand{
              * the UI.
              */
                     }
-                    CommandExecuted();
+                    CommandExecuted(status.isSuccess());
                 }
             });
             //LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, geofencesIds, pendingIntent);
@@ -88,12 +88,12 @@ public class RemoveGeofenceCommand extends AbstractGoogleServiceCommand{
              * the UI.
              */
                     }
-                    CommandExecuted();
+                    CommandExecuted(status.isSuccess());
                 }
             });
         } else {
             logger.log(Log.DEBUG, "Tried to remove Geofences when there were none");
-            CommandExecuted();
+            CommandExecuted(true);
         }
     }
 

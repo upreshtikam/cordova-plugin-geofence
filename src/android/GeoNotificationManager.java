@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationRequest;
 
 import org.apache.cordova.CallbackContext;
 
@@ -58,7 +56,8 @@ public class GeoNotificationManager {
 
     private boolean areGoogleServicesAvailable() {
         // Check that Google Play services is available
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+//        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
 
         // If Google Play services is available
         if (ConnectionResult.SUCCESS == resultCode) {
@@ -72,20 +71,47 @@ public class GeoNotificationManager {
             final CallbackContext callback) {
         List<Geofence> newGeofences = new ArrayList<Geofence>();
         for (GeoNotification geo : geoNotifications) {
-            geoNotificationStore.setGeoNotification(geo);
             newGeofences.add(geo.toGeofence());
         }
         AddGeofenceCommand geoFenceCmd = new AddGeofenceCommand(context,
                 pendingIntent, newGeofences);
-        if (callback != null) {
-            geoFenceCmd.addListener(new IGoogleServiceCommandListener() {
-                @Override
-                public void onCommandExecuted() {
+
+        geoFenceCmd.addListener(new AddGeofenceCommandListener(geoNotifications, geoNotificationStore, callback));
+
+        googleServiceCommandExecutor.QueueToExecute(geoFenceCmd);
+    }
+
+    private class AddGeofenceCommandListener implements IGoogleServiceCommandListener {
+
+        private List<GeoNotification> geoNotifications;
+        private GeoNotificationStore geoNotificationStore;
+        private CallbackContext callback;
+
+        public AddGeofenceCommandListener(List<GeoNotification> geoNotifications, GeoNotificationStore geoNotificationStore, CallbackContext callback) {
+            this.geoNotifications = geoNotifications;
+            this.geoNotificationStore = geoNotificationStore;
+            this.callback = callback;
+        }
+
+        @Override
+        public void onCommandExecuted(boolean withSuccess) {
+
+            if (withSuccess) {
+
+                // Save into database
+                for (GeoNotification geoNotification : geoNotifications) {
+                    geoNotificationStore.setGeoNotification(geoNotification);
+                }
+                if (callback != null) {
                     callback.success();
                 }
-            });
+
+            } else {
+                if (callback != null) {
+                    callback.error("Failed to add geofence");
+                }
+            }
         }
-        googleServiceCommandExecutor.QueueToExecute(geoFenceCmd);
     }
 
     public void removeGeoNotification(String id, final CallbackContext callback) {
@@ -94,20 +120,25 @@ public class GeoNotificationManager {
         removeGeoNotifications(ids, callback);
     }
 
-    public void removeGeoNotifications(List<String> ids,
+    public void removeGeoNotifications(final List<String> ids,
             final CallbackContext callback) {
         RemoveGeofenceCommand cmd = new RemoveGeofenceCommand(context, ids);
         if (callback != null) {
             cmd.addListener(new IGoogleServiceCommandListener() {
                 @Override
-                public void onCommandExecuted() {
-                    callback.success();
+                public void onCommandExecuted(boolean withSuccess) {
+                    if(withSuccess) {
+                        for (String id : ids) {
+                            geoNotificationStore.remove(id);
+                        }
+                        callback.success();
+                    } else {
+                        callback.error("Failed to remove geofence.");
+                    }
                 }
             });
         }
-        for (String id : ids) {
-            geoNotificationStore.remove(id);
-        }
+
         googleServiceCommandExecutor.QueueToExecute(cmd);
     }
 
