@@ -41,7 +41,7 @@ public class GeoNotificationNotifier {
             Intent resultIntent = context.getPackageManager()
                     .getLaunchIntentForPackage(packageName);
 
-            if (notification.data != null) {
+            if (notification.data != null && notification.data instanceof String && !((String)notification.data).isEmpty()) {
                 // TODO: verify if deeplink property is present in notification.getDataJson()
                 String strData = (String) notification.data;
                 if(strData != null) {

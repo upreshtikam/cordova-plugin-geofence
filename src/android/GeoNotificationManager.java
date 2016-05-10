@@ -41,7 +41,9 @@ public class GeoNotificationManager {
         List<GeoNotification> geoNotifications = geoNotificationStore.getAll();
         geoFences = new ArrayList<Geofence>();
         for (GeoNotification geo : geoNotifications) {
-            geoFences.add(geo.toGeofence());
+            if(!geo.notification.notificationShowed){
+                geoFences.add(geo.toGeofence());
+            }
         }
         if (!geoFences.isEmpty()) {
             googleServiceCommandExecutor.QueueToExecute(new AddGeofenceCommand(

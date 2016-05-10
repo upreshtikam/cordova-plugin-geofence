@@ -13,8 +13,6 @@ import com.google.android.gms.location.LocationStatusCodes;
 
 import java.util.List;
 
-//import com.google.android.gms.location.LocationClient.OnAddGeofencesResultListener;
-
 public class AddGeofenceCommand extends AbstractGoogleServiceCommand{
     private List<Geofence> geofencesToAdd;
     private PendingIntent pendingIntent;
