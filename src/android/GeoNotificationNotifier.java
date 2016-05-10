@@ -41,15 +41,11 @@ public class GeoNotificationNotifier {
             Intent resultIntent = context.getPackageManager()
                     .getLaunchIntentForPackage(packageName);
 
-            if (notification.data != null && notification.data instanceof String && !((String)notification.data).isEmpty()) {
-                // TODO: verify if deeplink property is present in notification.getDataJson()
-                String strData = (String) notification.data;
-                if(strData != null) {
-                    resultIntent.setData(Uri.parse(notification.getDataJson()));
-                }
-            } else {
-                resultIntent.putExtra("geofence.notification.data", geoNotification.toJson());
+            if (notification.deeplink != null && !notification.deeplink.isEmpty()) {
+                resultIntent.setData(Uri.parse(notification.deeplink));
             }
+
+            resultIntent.putExtra("geofence.notification.data", geoNotification.toJson());
 
             // The stack builder object will contain an artificial back stack
             // for the
