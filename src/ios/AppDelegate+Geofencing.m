@@ -85,11 +85,13 @@ CLLocationManager *knewLocationManager;
     
     if(notification != nil && notification.userInfo && [notification.userInfo objectForKey:@"geofence.notification.data"]) {
         NSDictionary *userInfo = notification.userInfo;
-        NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"deepLinkGeogence"]];
+        NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"deeplink"]];
         
-        if(siteURL && [userInfo objectForKey:@"deepLinkGeogence"] && ![[userInfo objectForKey:@"deepLinkGeogence"] isEqualToString:@""])
-            [[UIApplication sharedApplication] openURL:siteURL];
-        else
+        if(siteURL && [userInfo objectForKey:@"deeplink"] && ![[userInfo objectForKey:@"deeplink"] isEqualToString:@""]) {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                [[UIApplication sharedApplication] openURL:siteURL];
+            });
+        } else
             [[NSNotificationCenter defaultCenter] postNotificationName:@"CDVLocalNotificationGeofence" object:notification];
     }
     [self geofence_application:application didReceiveLocalNotification:notification];
@@ -150,8 +152,8 @@ CLLocationManager *knewLocationManager;
                 NSString * myString = [[NSString alloc] initWithData:jsonData   encoding:NSUTF8StringEncoding];
                 
                 [userInfoDici setObject:myString forKey:@"geofence.notification.data"];
-                if([[parsedData valueForKey:@"notification"] valueForKey:@"data"])
-                    [userInfoDici setObject:[[parsedData valueForKey:@"notification"] valueForKey:@"data"] forKey:@"deepLinkGeogence"];
+                if([[parsedData valueForKey:@"notification"] valueForKey:@"deeplink"])
+                    [userInfoDici setObject:[[parsedData valueForKey:@"notification"] valueForKey:@"deeplink"] forKey:@"deeplink"];
                 notification.userInfo = userInfoDici;
                 [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
             }
@@ -198,8 +200,8 @@ CLLocationManager *knewLocationManager;
                 NSString * myString = [[NSString alloc] initWithData:jsonData   encoding:NSUTF8StringEncoding];
                 
                 [userInfoDici setObject:myString forKey:@"geofence.notification.data"];
-                if([[parsedData valueForKey:@"notification"] valueForKey:@"data"])
-                    [userInfoDici setObject:[[parsedData valueForKey:@"notification"] valueForKey:@"data"] forKey:@"deepLinkGeogence"];
+                if([[parsedData valueForKey:@"notification"] valueForKey:@"deeplink"])
+                    [userInfoDici setObject:[[parsedData valueForKey:@"notification"] valueForKey:@"deeplink"] forKey:@"deeplink"];
                 notification.userInfo = userInfoDici;
                 
                 [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
