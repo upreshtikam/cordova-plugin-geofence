@@ -95,7 +95,6 @@ public class GeofencePlugin extends CordovaPlugin {
             Context context = this.cordova.getActivity();
             context.unregisterReceiver(mReceiver);
         } catch (Exception e) {
-            e.printStackTrace();
         }
         super.onDestroy();
     }
@@ -176,6 +175,7 @@ public class GeofencePlugin extends CordovaPlugin {
                 Log.d(TAG, "No notifications clicked.");
             } else {
                 webView.sendJavascript(js);
+                launcherIntent.removeExtra("geofence.notification.data");
             }
         }
     }
