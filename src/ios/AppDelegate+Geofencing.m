@@ -91,26 +91,11 @@ CLLocationManager *knewLocationManager;
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 [[UIApplication sharedApplication] openURL:siteURL];
             });
-        } else
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"CDVLocalNotificationGeofence" object:notification];
+        }
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"CDVLocalNotificationGeofence" object:notification];
     }
     [self geofence_application:application didReceiveLocalNotification:notification];
 }
-
-/*-(void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
-    
-    NSLog(@"Did Receive Local Notification Delegate - Geofence");
-    
-    if(notification != nil && notification.userInfo && [notification.userInfo objectForKey:@"geofence.notification.data"]) {
-        NSDictionary *userInfo = notification.userInfo;
-        NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"deepLinkGeogence"]];
-        
-        if(siteURL && [userInfo objectForKey:@"deepLinkGeogence"] && ![[userInfo objectForKey:@"deepLinkGeogence"] isEqualToString:@""])
-            [[UIApplication sharedApplication] openURL:siteURL];
-        else
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"CDVLocalNotificationGeofence" object:notification];
-    }
-}*/
 
 -(void) locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
