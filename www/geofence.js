@@ -1,6 +1,8 @@
 var exec = require("cordova/exec"),
     channel = require("cordova/channel");
 
+var localNotificationData;
+
 module.exports = {
     /**
      * Initializing geofence plugin
@@ -71,20 +73,35 @@ module.exports = {
     getWatched: function (success, error) {
         return execPromise(success, error, "GeofencePlugin", "getWatched", []);
     },
-    /**
-     * Called when app is opened via Notification bar
-     *
-     * @name onNotificationClicked
-     * @param {JSON} notificationData user data from notification
-     */
-    onNotificationClicked: function (notificationData) {},
+    
     /**
      * Called when app received geofence transition event
      * @param  {Array} geofences
      */
     onTransitionReceived: function (geofences) {
+        if(geofences.constructor === Array) {
+            if(geofences.length === 1 && geofences[0].openedFromNotification) {
+                localNotificationData = geofences;
+            }
+        }
+        
         this.receiveTransition(geofences);
     },
+    
+    /**
+     * If the application was opened from a notification click, returns 
+     * the geofence data from that event.
+     */
+    getOpenedFromNotificationData: function() {
+        if(localNotificationData !== undefined) {
+            var clonedData = Array.from(localNotificationData);
+            localNotificationData = undefined;
+            return clonedData;
+        }
+        
+        return undefined;
+    },
+    
     /**
      * Called when app received geofence transition event
      * @deprecated since version 0.4.0, see onTransitionReceived
