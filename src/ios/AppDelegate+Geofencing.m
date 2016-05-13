@@ -179,7 +179,7 @@ CLLocationManager *knewLocationManager;
                 [parsedData setValue:@"true" forKey:@"openedFromNotification"];
                 NSMutableDictionary *userInfoDici = [[NSMutableDictionary alloc]init];
                 [userInfoDici setValue:@"outside" forKey:@"state"];
-                
+               
                 NSError * err;
                 NSData * jsonData = [NSJSONSerialization  dataWithJSONObject:parsedData options:0 error:&err];
                 NSString * myString = [[NSString alloc] initWithData:jsonData   encoding:NSUTF8StringEncoding];
