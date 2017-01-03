@@ -1,4 +1,5 @@
-﻿module.exports = {
+
+module.exports = {
     initialize: function (success, fail, args, env) {
         GeofenceComponent.GeofenceTrigger.register();
         success && success();

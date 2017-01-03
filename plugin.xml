@@ -19,10 +19,9 @@
         <clobbers target="geofence" />
     </js-module>
 
-    <dependency
-  	id="es6-promise-plugin"
-  	url="https://github.com/vstirbu/PromisesPlugin.git">
-    </dependency>
+    <dependency id="cordova-plugin-add-swift-support" version="1.6.0" />
+    <dependency id="cordova-plugin-compat" version="^1.0.0" />
+    <dependency id="es6-promise-plugin" />
 
     <!-- android -->
     <platform name="android">
@@ -116,7 +115,6 @@
 
     <!-- ios -->
     <platform name="ios">
-        <hook type="after_plugin_install" src="hooks/add_swift_support.js" />
         <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
             <string>${EXECUTABLE_NAME} Would Like to Use Your Current Location Even In Background.</string>
         </config-file>
@@ -133,11 +131,13 @@
             <param name="ios-package" value="HWPGeofencePlugin"/>
           </feature>
         </config-file>
-        <header-file src="src/ios/Geo-Bridging-Header.h" />
+        <header-file src="src/ios/Geofence-Plugin-Bridging-Header.h" />
         <source-file src="src/ios/GeofencePlugin.swift"/>
         <source-file src="src/ios/SwiftData.swift"/>
         <source-file src="src/ios/SwiftyJson.swift"/>
-        
+        <framework src="libsqlite3.dylib"/>
+        <framework src="WebKit.framework" weak="true" />
+
         <header-file src="src/ios/AppDelegate+Geofencing.h"/>
         <source-file src="src/ios/AppDelegate+Geofencing.m"/>
         <header-file src="src/ios/GeofenceHelper.h"/>
