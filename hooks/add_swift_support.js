@@ -36,16 +36,16 @@ module.exports = function(context) {
         // hopefully projectFile can't go null here.......
         xcodeProject = projectFile.xcode;
 
-        bridgingHeaderPath = getBridgingHeader(xcodeProject);
+        /*bridgingHeaderPath = getBridgingHeader(xcodeProject);
         if(bridgingHeaderPath) {
             bridgingHeaderPath = path.join(iosPlatformPath, bridgingHeaderPath);
         } else {
             bridgingHeaderPath = createBridgingHeader(xcodeProject, projectName, iosProjectFilesPath);
-        }
+        } */
 
         setObjCInterfaceMethod(xcodeProject);
 
-        getExistingBridgingHeaders(iosProjectFilesPath, function (headers) {
+       /* getExistingBridgingHeaders(iosProjectFilesPath, function (headers) {
             importBridgingHeaders(bridgingHeaderPath, headers);
             var configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection()),
             config, buildSettings;
@@ -70,7 +70,7 @@ module.exports = function(context) {
             xcodeProject.addFramework("libsqlite3.dylib");
 
             projectFile.write();
-        });
+        }); */
     }
 
     function setObjCInterfaceMethod(xcodeProject) {
