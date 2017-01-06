@@ -20,14 +20,12 @@ var path = require('path');
 var xcode = require('xcode');
 
 var COMMENT_KEY = /_comment$/;
-console.log('Starting hook');
 
 module.exports = function (context) {
   var platformMetadata = context.requireCordovaModule('cordova-lib/src/cordova/platform_metadata');
   var projectRoot = context.opts.projectRoot;
   var glob = context.requireCordovaModule('glob');
 
-  console.log('Starting hook - exports');
   // This script has to be executed depending on the command line arguments, not
   // on the hook execution cycle.
   if ((context.hook === 'after_platform_add' && context.cmdLine.includes('platform add')) ||
@@ -37,7 +35,6 @@ module.exports = function (context) {
       var IOS_MIN_DEPLOYMENT_TARGET = '7.0';
       var platformPath = path.join(projectRoot, 'platforms', 'ios');
       var config = getConfigParser(context, path.join(projectRoot, 'config.xml'));
-
       var bridgingHeaderPath;
       var bridgingHeaderContent;
       var projectName;
@@ -57,7 +54,6 @@ module.exports = function (context) {
           iosPlatformVersion = platformVersion.version;
         }
       });
-
       if (!iosPlatformVersion) {
         return;
       }
@@ -71,7 +67,6 @@ module.exports = function (context) {
       xcodeProject.parseSync();
 
       bridgingHeaderPath = getBridgingHeaderPath(context, projectPath, iosPlatformVersion);
-
       try {
         fs.statSync(bridgingHeaderPath);
       } catch (err) {
@@ -84,21 +79,21 @@ module.exports = function (context) {
         fs.writeFileSync(bridgingHeaderPath, bridgingHeaderContent.join('\n'), { encoding: 'utf-8', flag: 'w' });
         xcodeProject.addHeaderFile('Bridging-Header.h');
       }
-
       buildConfigs = xcodeProject.pbxXCBuildConfigurationSection();
-
       var bridgingHeaderProperty = '"$(PROJECT_DIR)/$(PROJECT_NAME)' + bridgingHeaderPath.split(projectPath)[1] + '"';
-
       for (configName in buildConfigs) {
+        console.log('Starting hook - exports -after cenas - for ' + configName);
         if (!COMMENT_KEY.test(configName)) {
+          console.log('Starting hook - exports -after cenas - for - comment key');
           buildConfig = buildConfigs[configName];
+          console.log('Starting hook - exports -after cenas - for - buildConfig');
           if (xcodeProject.getBuildProperty('SWIFT_OBJC_BRIDGING_HEADER', buildConfig.name) !== bridgingHeaderProperty) {
+            console.log('Starting hook - exports -after cenas - for - getBuildProperty header');
             xcodeProject.updateBuildProperty('SWIFT_OBJC_BRIDGING_HEADER', bridgingHeaderProperty, buildConfig.name);
             console.log('Update IOS build setting SWIFT_OBJC_BRIDGING_HEADER to:', bridgingHeaderProperty, 'for build configuration', buildConfig.name);
           }
         }
       }
-
       // Look for any bridging header defined in the plugin
       glob('**/*Bridging-Header*.h', { cwd: pluginsPath }, function (error, files) {
         var bridgingHeader = path.basename(bridgingHeaderPath);
@@ -122,7 +117,6 @@ module.exports = function (context) {
           }
         });
         fs.writeFileSync(bridgingHeaderPath, content, 'utf-8');
-
         for (configName in buildConfigs) {
           if (!COMMENT_KEY.test(configName)) {
             buildConfig = buildConfigs[configName];
