@@ -1,3 +1,4 @@
+
 exports.defineAutoTests = function () {
     var fail = function (done, reason) {
             if (reason) {

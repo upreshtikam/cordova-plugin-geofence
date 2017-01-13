@@ -94,7 +94,7 @@ module.exports = {
      */
     getOpenedFromNotificationData: function() {
         if(localNotificationData !== undefined) {
-            var clonedData = Array.from(localNotificationData);
+            var clonedData = localNotificationData;
             localNotificationData = undefined;
             return clonedData;
         }
