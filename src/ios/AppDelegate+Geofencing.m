@@ -79,24 +79,6 @@ CLLocationManager *knewLocationManager;
     return [self geofencing_application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
--(void) geofence_application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
-{
-    NSLog(@"Did Receive Local Notification Delegate - Geofence");
-    
-    if(notification != nil && notification.userInfo && [notification.userInfo objectForKey:@"geofence.notification.data"]) {
-        NSDictionary *userInfo = notification.userInfo;
-        NSURL *siteURL = [NSURL URLWithString:[userInfo objectForKey:@"deeplink"]];
-        
-        if(siteURL && [userInfo objectForKey:@"deeplink"] && ![[userInfo objectForKey:@"deeplink"] isEqualToString:@""]) {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                [[UIApplication sharedApplication] openURL:siteURL];
-            });
-        }
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"CDVLocalNotificationGeofence" object:notification];
-    }
-    [self geofence_application:application didReceiveLocalNotification:notification];
-}
-
 -(void) locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
     UIApplicationState state = [[UIApplication sharedApplication] applicationState];
