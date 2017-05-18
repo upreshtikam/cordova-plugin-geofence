@@ -30,7 +30,8 @@ module.exports = function (context) {
   // on the hook execution cycle.
   if ((context.hook === 'after_platform_add' && context.cmdLine.includes('platform add')) ||
   (context.hook === 'after_prepare' && context.cmdLine.includes('prepare')) ||
-  (context.hook === 'after_plugin_add' && context.cmdLine.includes('plugin add'))) {
+  (context.hook === 'after_plugin_add' && context.cmdLine.includes('plugin add')) ||
+  (context.hook === 'before_build' && context.cmdLine.includes('build'))) {
     platformMetadata.getPlatformVersions(projectRoot).then(function (platformVersions) {
       var IOS_MIN_DEPLOYMENT_TARGET = '7.0';
       var platformPath = path.join(projectRoot, 'platforms', 'ios');
