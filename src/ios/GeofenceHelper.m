@@ -7,7 +7,7 @@
 //
 
 #import "GeofenceHelper.h"
-#import "OutSystems-Swift.h"
+#import "Outsystems-Swift.h"
 
 @implementation GeofenceHelper
 

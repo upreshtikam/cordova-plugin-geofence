@@ -423,6 +423,24 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     }
 }
 
+@objc class WrapperStore : NSObject {
+    
+    let store = GeoNotificationStore()
+    
+    @objc func getGeofencingById(_ id: String) -> String? {
+        store.createDBStructure();
+        return store.findById(id)?.description
+    }
+    
+    @objc func updateDB(_ geoNotification: String) {
+        store.createDBStructure();
+        
+        let jsonGeoNotification = JSON(data: geoNotification.data(using: String.Encoding.utf8)!)
+        
+        store.update(jsonGeoNotification)
+    }
+}
+
 class GeoNotificationStore {
     init() {
         createDBStructure()
@@ -494,6 +512,26 @@ class GeoNotificationStore {
         }
     }
 
+    func findByIdStr(id: String) -> String? {
+        let (resultSet, err) = SD.executeQuery("SELECT * FROM GeoNotifications WHERE Id = ?", withArgs: [id as AnyObject])
+        
+        if err != nil {
+            //there was an error during the query, handle it here
+            log("Error while fetching \(id) GeoNotification table: \(err)")
+            return nil
+        } else {
+            if (resultSet.count > 0) {
+                let jsonString = resultSet[0]["Data"]!.asString()!
+                let jason = JSON(data: jsonString.data(using: String.Encoding.utf8)!)
+                return jason.rawString(String.Encoding.utf8.rawValue, options: [])
+                
+            }
+            else {
+                return nil
+            }
+        }
+    }
+    
     func getAll() -> [JSON]? {
         let (resultSet, err) = SD.executeQuery("SELECT * FROM GeoNotifications")
 
