@@ -79,7 +79,7 @@ module.exports = {
      * @param  {Array} geofences
      */
     onTransitionReceived: function (geofences) {
-        if(geofences.constructor === Array) {
+        if(geofences.constructor === Array) {
             if(geofences.length === 1 && geofences[0].openedFromNotification) {
                 localNotificationData = geofences;
             }
