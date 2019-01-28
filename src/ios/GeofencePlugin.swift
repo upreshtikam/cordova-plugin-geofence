@@ -28,7 +28,7 @@ func log(_ messages: [String]) {
 @available(iOS 8.0, *)
 @objc(HWPGeofencePlugin) class GeofencePlugin : CDVPlugin {
     lazy var geoNotificationManager = GeoNotificationManager()
-    let priority = DispatchQueue.GlobalQueuePriority.default
+    let qos = DispatchQoS.QoSClass.default
 
     override func pluginInitialize () {
         NotificationCenter.default.addObserver(
@@ -97,7 +97,7 @@ func log(_ messages: [String]) {
     }
 
     func addOrUpdate(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global(qos: qos).async {
             // do some task
             for geo in command.arguments {
                 self.geoNotificationManager.addOrUpdateGeoNotification(JSON(geo))
@@ -110,7 +110,7 @@ func log(_ messages: [String]) {
     }
 
     func getWatched(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global(qos: qos).async {
             let watched = self.geoNotificationManager.getWatchedGeoNotifications()!
             let watchedJsonString = watched.description
             DispatchQueue.main.async {
@@ -121,7 +121,7 @@ func log(_ messages: [String]) {
     }
 
     func remove(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global(qos: qos).async {
             for id in command.arguments {
                 self.geoNotificationManager.removeGeoNotification(id as! String)
             }
@@ -133,7 +133,7 @@ func log(_ messages: [String]) {
     }
 
     func removeAll(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global(qos: qos).async {
             self.geoNotificationManager.removeAllGeoNotifications()
             DispatchQueue.main.async {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
@@ -183,7 +183,7 @@ func log(_ messages: [String]) {
 // class for faking crossing geofences
 @available(iOS 8.0, *)
 class GeofenceFaker {
-    let priority = DispatchQueue.GlobalQueuePriority.default
+    let qos = DispatchQoS.QoSClass.default
     let geoNotificationManager: GeoNotificationManager
 
     init(manager: GeoNotificationManager) {
@@ -191,7 +191,7 @@ class GeofenceFaker {
     }
 
     func start() {
-         DispatchQueue.global(priority: priority).async {
+         DispatchQueue.global(qos: qos).async {
             while (true) {
                 log("FAKER")
                 let notify = arc4random_uniform(4)
