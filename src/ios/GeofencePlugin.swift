@@ -226,18 +226,14 @@ class GeofenceFaker {
 
 @available(iOS 8.0, *)
 class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
-    var locationManager: CLLocationManager!
+    let locationManager = CLLocationManager()
     let store = GeoNotificationStore()
 
     override init() {
         log("GeoNotificationManager init")
         super.init()
-        DispatchQueue.main.async {
-            self.locationManager = CLLocationManager()
-            self.locationManager.delegate = self
-            self.locationManager.startUpdatingHeading()
-            self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        }
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
 
     func registerPermissions() {
