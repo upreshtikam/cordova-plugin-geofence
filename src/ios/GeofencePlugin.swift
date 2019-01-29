@@ -233,6 +233,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         log("GeoNotificationManager init")
         super.init()
         locationManager.delegate = self
+        self.locationManager.startUpdatingHeading()
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
 
@@ -391,52 +392,71 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     }
 
     func handleTransition(_ region: CLRegion!, transitionType: Int) {
-        if var geoNotification = store.findById(region.identifier) {
-            geoNotification["transitionType"].int = transitionType
+        if region is CLCircularRegion {
+            if var geoNotification = store.findById(region.identifier) {
+                geoNotification["transitionType"].int = transitionType
+                let appState : UIApplicationState = UIApplication.shared.applicationState;
+                if (appState == UIApplicationState.background  || appState == UIApplicationState.inactive)
+                {
+                    geoNotification["openedFromNotification"].bool = true
+                } else {
+                    geoNotification["openedFromNotification"].bool = false
+                }
 
-            if geoNotification["notification"].isExists() {
-                notifyAbout(geoNotification)
+                if (appState == UIApplicationState.active)
+                {
+                    let geoNotificationStr = geoNotification.rawString(String.Encoding.utf8.rawValue, options: [])
+                    let dispatchEvent = GeofenceHelper.validateTimeInterval(with: geoNotificationStr)
+
+                    if geoNotification["notification"].isExists() {
+                        if(dispatchEvent) {
+                            notifyAbout(geoNotification)
+                        }
+                    }
+
+                    if(dispatchEvent) {
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "handleTransition"), object: geoNotification.rawString(String.Encoding.utf8.rawValue, options: []))
+                    }
+                }
             }
-
-            NotificationCenter.default.post(name: Notification.Name(rawValue: "handleTransition"), object: geoNotification.rawString(String.Encoding.utf8.rawValue, options: []))
         }
     }
 
     func notifyAbout(_ geo: JSON) {
-        log("Creating notification")
-        let notification = UILocalNotification()
-        notification.timeZone = TimeZone.current
-        let dateTime = Date()
-        notification.fireDate = dateTime
-        notification.soundName = UILocalNotificationDefaultSoundName
-        notification.alertBody = geo["notification"]["text"].stringValue
-        if let json = geo["notification"]["data"] as JSON? {
-            notification.userInfo = ["geofence.notification.data": json.rawString(String.Encoding.utf8.rawValue, options: [])!]
-        }
-        UIApplication.shared.scheduleLocalNotification(notification)
-
-        if let vibrate = geo["notification"]["vibrate"].array {
-            if (!vibrate.isEmpty && vibrate[0].intValue > 0) {
-                AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
-            }
-        }
+//        log("Creating notification")
+//        let notification = UILocalNotification()
+//        notification.timeZone = TimeZone.current
+//        let dateTime = Date()
+//        notification.fireDate = dateTime
+//        notification.soundName = UILocalNotificationDefaultSoundName
+//        notification.alertBody = geo["notification"]["text"].stringValue
+//        if let json = geo["notification"]["data"] as JSON? {
+//            notification.userInfo = ["geofence.notification.data": json.rawString(String.Encoding.utf8.rawValue, options: [])!]
+//        }
+//        UIApplication.shared.scheduleLocalNotification(notification)
+//
+//        if let vibrate = geo["notification"]["vibrate"].array {
+//            if (!vibrate.isEmpty && vibrate[0].intValue > 0) {
+//                AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
+//            }
+//        }
     }
 }
 
 @objc class WrapperStore : NSObject {
-    
+
     let store = GeoNotificationStore()
-    
+
     @objc func getGeofencingById(_ id: String) -> String? {
         store.createDBStructure();
         return store.findById(id)?.description
     }
-    
+
     @objc func updateDB(_ geoNotification: String) {
         store.createDBStructure();
-        
+
         let jsonGeoNotification = JSON(data: geoNotification.data(using: String.Encoding.utf8)!)
-        
+
         store.update(jsonGeoNotification)
     }
 }
@@ -514,7 +534,7 @@ class GeoNotificationStore {
 
     func findByIdStr(id: String) -> String? {
         let (resultSet, err) = SD.executeQuery("SELECT * FROM GeoNotifications WHERE Id = ?", withArgs: [id as AnyObject])
-        
+
         if err != nil {
             //there was an error during the query, handle it here
             log("Error while fetching \(id) GeoNotification table: \(err)")
@@ -524,14 +544,14 @@ class GeoNotificationStore {
                 let jsonString = resultSet[0]["Data"]!.asString()!
                 let jason = JSON(data: jsonString.data(using: String.Encoding.utf8)!)
                 return jason.rawString(String.Encoding.utf8.rawValue, options: [])
-                
+
             }
             else {
                 return nil
             }
         }
     }
-    
+
     func getAll() -> [JSON]? {
         let (resultSet, err) = SD.executeQuery("SELECT * FROM GeoNotifications")
 

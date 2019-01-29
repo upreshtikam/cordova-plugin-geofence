@@ -48,21 +48,6 @@ CLLocationManager *knewLocationManager;
             method_exchangeImplementations(originalMethod, swizzledMethod);
         }
         
-        //
-        SEL originalSelectorNoti = @selector(application:didReceiveLocalNotification:);
-        SEL swizzledSelectorNoti = @selector(geofence_application:didReceiveLocalNotification:);
-        
-        Method originalMethodNoti = class_getInstanceMethod(class, originalSelectorNoti);
-        Method swizzledMethodNoti = class_getInstanceMethod(class, swizzledSelectorNoti);
-        
-        BOOL didAddMethodNoti = class_addMethod(class, originalSelectorNoti, method_getImplementation(swizzledMethodNoti), method_getTypeEncoding(swizzledMethodNoti));
-        
-        if (didAddMethodNoti) {
-            class_replaceMethod(class, swizzledSelectorNoti, method_getImplementation(originalMethodNoti), method_getTypeEncoding(originalMethodNoti));
-        } else {
-            method_exchangeImplementations(originalMethodNoti, swizzledMethodNoti);
-        }
-        
     });
 }
 

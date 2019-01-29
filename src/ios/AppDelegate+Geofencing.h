@@ -14,6 +14,5 @@
 
 @property (strong, nonatomic) CLLocationManager * locationManager;
 - (BOOL) geofencing_application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
--(void) geofence_application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification;
 
 @end
