@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-//import android.support.v4.app.NotificationCompat;
-//import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 public class GeoNotificationNotifier {
@@ -26,7 +26,7 @@ public class GeoNotificationNotifier {
     }
 
     public void notify(GeoNotification geoNotification) {
-        /*Notification notification = geoNotification.notification;
+        Notification notification = geoNotification.notification;
         notification.setContext(context);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setVibrate(notification.getVibrate())
@@ -70,6 +70,6 @@ public class GeoNotificationNotifier {
             e.printStackTrace();
         }
         notificationManager.notify(notification.id, mBuilder.build());
-        logger.log(Log.DEBUG, notification.toString());*/
+        logger.log(Log.DEBUG, notification.toString());
     }
 }
